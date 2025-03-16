@@ -9,7 +9,7 @@ A demonstration project showing how to implement rate limiting for API endpoints
 - Admin-specific rate limiting based on API key
 - Configurable rate limits via environment variables
 - Different rate limits for different API endpoints
-- IP address information endpoint
+- IP address information endpoint with User-Agent detection
 
 ## Requirements
 
@@ -76,6 +76,7 @@ This endpoint returns information about your IP address, including:
 - Any forwarded IPs (if behind a proxy)
 - Your hostname
 - The rate limit key used for your requests
+- Your User-Agent (browser or application making the request)
 
 ### User Endpoint (User-specific Rate Limit)
 

@@ -39,6 +39,9 @@ func GetIPInfo(c *fiber.Ctx) error {
 	// Get the client IP that will be used for rate limiting
 	clientIP := getClientIP(c)
 
+	// Get the User-Agent
+	userAgent := c.Get("User-Agent")
+
 	return c.JSON(fiber.Map{
 		"status":         "success",
 		"message":        "Your IP address information",
@@ -48,6 +51,7 @@ func GetIPInfo(c *fiber.Ctx) error {
 		"hostname":       c.Hostname(),
 		"rate_limit_key": "ip:" + clientIP,
 		"client_ip":      clientIP,
+		"user_agent":     userAgent,
 		"headers": fiber.Map{
 			"x_forwarded_for": c.Get("X-Forwarded-For"),
 			"x_real_ip":       c.Get("X-Real-IP"),
