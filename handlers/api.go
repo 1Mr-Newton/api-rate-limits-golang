@@ -1,0 +1,56 @@
+package handlers
+
+import (
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+// GetPublicInfo handles the public info endpoint
+func GetPublicInfo(c *fiber.Ctx) error {
+	return c.JSON(fiber.Map{
+		"status":    "success",
+		"message":   "This is a public endpoint with global rate limiting",
+		"timestamp": time.Now().Format(time.RFC3339),
+	})
+}
+
+// GetUserInfo handles the user info endpoint
+func GetUserInfo(c *fiber.Ctx) error {
+	return c.JSON(fiber.Map{
+		"status":    "success",
+		"message":   "This is a user endpoint with user-specific rate limiting",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"user_id":   c.Query("user_id", "anonymous"),
+	})
+}
+
+// GetIPInfo handles the IP info endpoint
+func GetIPInfo(c *fiber.Ctx) error {
+	return c.JSON(fiber.Map{
+		"status":    "success",
+		"message":   "Your IP address information",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"ip":        c.IP(),
+		"ips":       c.IPs(),
+		"hostname":  c.Hostname(),
+	})
+}
+
+// GetAdminInfo handles the admin info endpoint
+func GetAdminInfo(c *fiber.Ctx) error {
+	apiKey := c.Get("X-API-Key")
+	if apiKey == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"status":  "error",
+			"message": "API key is required for admin endpoints",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status":    "success",
+		"message":   "This is an admin endpoint with admin-specific rate limiting",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"api_key":   apiKey[:5] + "...", // Show only first 5 chars for security
+	})
+}
