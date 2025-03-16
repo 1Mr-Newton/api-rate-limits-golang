@@ -24,9 +24,9 @@ func (c *Config) GetAddress() string {
 func LoadConfig() *Config {
 	return &Config{
 		Port:                getEnvAsInt("PORT", 3000),
-		GlobalRateLimit:     getEnvAsInt("GLOBAL_RATE_LIMIT", 100),    // 100 requests per minute by default
-		UserRateLimit:       getEnvAsInt("USER_RATE_LIMIT", 50),       // 50 requests per minute by default
-		AdminRateLimit:      getEnvAsInt("ADMIN_RATE_LIMIT", 200),     // 200 requests per minute by default
+		GlobalRateLimit:     getEnvAsInt("GLOBAL_RATE_LIMIT", 3),      // 3 requests per minute for testing
+		UserRateLimit:       getEnvAsInt("USER_RATE_LIMIT", 3),        // 3 requests per minute for testing
+		AdminRateLimit:      getEnvAsInt("ADMIN_RATE_LIMIT", 3),       // 3 requests per minute for testing
 		RateLimitExpiration: getEnvAsInt("RATE_LIMIT_EXPIRATION", 60), // 60 seconds (1 minute) by default
 	}
 }

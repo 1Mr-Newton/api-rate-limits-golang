@@ -25,15 +25,33 @@ func GetUserInfo(c *fiber.Ctx) error {
 	})
 }
 
+// getClientIP gets the real client IP, prioritizing X-Forwarded-For header
+func getClientIP(c *fiber.Ctx) string {
+	ips := c.IPs()
+	if len(ips) > 0 {
+		return ips[0]
+	}
+	return c.IP()
+}
+
 // GetIPInfo handles the IP info endpoint
 func GetIPInfo(c *fiber.Ctx) error {
+	// Get the client IP that will be used for rate limiting
+	clientIP := getClientIP(c)
+
 	return c.JSON(fiber.Map{
-		"status":    "success",
-		"message":   "Your IP address information",
-		"timestamp": time.Now().Format(time.RFC3339),
-		"ip":        c.IP(),
-		"ips":       c.IPs(),
-		"hostname":  c.Hostname(),
+		"status":         "success",
+		"message":        "Your IP address information",
+		"timestamp":      time.Now().Format(time.RFC3339),
+		"ip":             c.IP(),
+		"ips":            c.IPs(),
+		"hostname":       c.Hostname(),
+		"rate_limit_key": "ip:" + clientIP,
+		"client_ip":      clientIP,
+		"headers": fiber.Map{
+			"x_forwarded_for": c.Get("X-Forwarded-For"),
+			"x_real_ip":       c.Get("X-Real-IP"),
+		},
 	})
 }
 

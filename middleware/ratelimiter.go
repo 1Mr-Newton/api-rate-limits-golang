@@ -23,6 +23,18 @@ type RateLimiterConfig struct {
 	Store fiber.Storage
 }
 
+// getClientIP gets the real client IP, prioritizing X-Forwarded-For header
+func getClientIP(c *fiber.Ctx) string {
+	// Check if we have IPs from X-Forwarded-For header
+	ips := c.IPs()
+	if len(ips) > 0 {
+		// Use the first IP in the list (original client)
+		return ips[0]
+	}
+	// Fall back to c.IP() if no forwarded IPs
+	return c.IP()
+}
+
 // NewUserRateLimiter creates a new rate limiter middleware for user-specific rate limiting
 func NewUserRateLimiter(max int, expiration time.Duration) fiber.Handler {
 	return limiter.New(limiter.Config{
@@ -30,13 +42,13 @@ func NewUserRateLimiter(max int, expiration time.Duration) fiber.Handler {
 		Expiration: expiration,
 		KeyGenerator: func(c *fiber.Ctx) string {
 			// Use user_id from query params or header for user-specific rate limiting
-			// If not available, fall back to IP address
+			// If not available, fall back to client IP address
 			userID := c.Query("user_id")
 			if userID == "" {
 				userID = c.Get("X-User-ID")
 			}
 			if userID == "" {
-				return c.IP()
+				return "ip:" + getClientIP(c)
 			}
 			return "user:" + userID
 		},
@@ -55,7 +67,7 @@ func NewIPRateLimiter(max int, expiration time.Duration) fiber.Handler {
 		Max:        max,
 		Expiration: expiration,
 		KeyGenerator: func(c *fiber.Ctx) string {
-			return c.IP()
+			return "ip:" + getClientIP(c)
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
@@ -74,8 +86,8 @@ func NewAPIKeyRateLimiter(max int, expiration time.Duration) fiber.Handler {
 		KeyGenerator: func(c *fiber.Ctx) string {
 			apiKey := c.Get("X-API-Key")
 			if apiKey == "" {
-				// If no API key is provided, use IP as fallback
-				return c.IP()
+				// If no API key is provided, use client IP as fallback
+				return "ip:" + getClientIP(c)
 			}
 			return "api:" + apiKey
 		},
